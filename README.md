@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 📚 Biblioteca SOLID + GoF
 
 > Estudo de caso acadêmico — aplicação prática dos cinco princípios **SOLID** e dos padrões de projeto **GoF** (Factory Method, Facade e Observer) em um sistema de biblioteca.
@@ -203,3 +204,6 @@ A pasta `refatoracao/` contém a evolução do código em quatro passos:
 | `02-passo2-interface-notification` | Introdução da interface `Notification` (DIP + LSP) |
 | `03-passo3-factory-method` | Substituição do `if/else` pela `NotificationFactory` (OCP) |
 | `04-passo4-observer-facade-final` | Introdução do Observer e da Facade — código final |
+=======
+# Artigo_Arquitetura_de_Sistemas
+>>>>>>> 5061e59f8adffb619c3f43025afa52a2186e1249
