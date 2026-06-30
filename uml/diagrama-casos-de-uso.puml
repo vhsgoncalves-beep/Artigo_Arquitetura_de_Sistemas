@@ -1,0 +1,42 @@
+@startuml diagrama-casos-de-uso
+skinparam actorBorderColor #2563eb
+skinparam usecaseBorderColor #64748b
+skinparam usecaseBackgroundColor #f8fafc
+skinparam ArrowColor #64748b
+
+title Diagrama de Casos de Uso — Sistema de Biblioteca
+
+left to right direction
+
+actor "Usuário da\nBiblioteca" as U
+
+rectangle "Sistema de Biblioteca" {
+  usecase "Cadastrar Livro"      as UC1
+  usecase "Listar Livros"        as UC2
+  usecase "Emprestar Livro"      as UC3
+  usecase "Devolver Livro"       as UC4
+  usecase "Notificar via Console" as UC5
+  usecase "Notificar via E-mail"  as UC6
+}
+
+U --> UC1
+U --> UC2
+U --> UC3
+U --> UC4
+
+UC3 ..> UC5 : <<include>>
+UC3 ..> UC6 : <<include>>
+
+note right of UC3
+  Ao emprestar, o Observer
+  dispara automaticamente
+  UC5 e UC6 (Console e E-mail).
+end note
+
+note right of UC1
+  Valida título, autor e ISBN.
+  Livro cadastrado com
+  disponivel = true.
+end note
+
+@enduml

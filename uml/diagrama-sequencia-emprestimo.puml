@@ -1,0 +1,84 @@
+@startuml diagrama-sequencia-emprestimo
+skinparam sequenceArrowThickness 1.5
+skinparam responseMessageBelowArrow true
+skinparam sequenceParticipantBorderColor #64748b
+skinparam sequenceActorBorderColor #64748b
+skinparam NoteBackgroundColor #f8fafc
+skinparam NoteBorderColor #94a3b8
+
+title Diagrama de Sequência — Realizar Empréstimo
+
+actor       "Usuário"              as U
+participant "EmprestimoController" as EC
+participant "LibraryFacade"        as LF
+participant "EmprestimoService"    as ES
+participant "LivroService"         as LS
+participant "LivroRepository"      as LR
+participant "EmprestimoRepository" as ER
+participant "EmprestimoNotificador" as EN
+participant "ConsoleObserver"      as CO
+participant "EmailObserver"        as EO
+participant "NotificationFactory"  as NF
+participant "ConsoleNotification"  as CN
+participant "EmailNotification"    as EMN
+
+U  -> EC : POST /api/emprestimos\n{livroId, nomeUsuario}
+activate EC
+
+EC -> LF : borrowBook(request)
+activate LF
+
+LF -> ES : emprestar(request)
+activate ES
+
+ES -> LS : buscarEntidadePorId(livroId)
+activate LS
+LS -> LR : findById(livroId)
+LR --> LS : Livro
+LS --> ES : Livro
+deactivate LS
+
+note right of ES
+  Verifica se livro
+  está disponível (SRP)
+end note
+
+ES -> LS : salvar(livro.setDisponivel(false))
+activate LS
+LS -> LR : save(livro)
+deactivate LS
+
+ES -> ER : save(emprestimo)
+ER --> ES : Emprestimo (persistido)
+
+ES -> EN : notificarObservers(emprestimo)
+activate EN
+
+EN -> CO : aoEmprestar(emprestimo)
+activate CO
+CO -> NF : criar(CONSOLE)
+NF --> CO : ConsoleNotification
+CO -> CN : enviar(usuario, mensagem)
+CN --> CO : (log no console)
+deactivate CO
+
+EN -> EO : aoEmprestar(emprestimo)
+activate EO
+EO -> NF : criar(EMAIL)
+NF --> EO : EmailNotification
+EO -> EMN : enviar(usuario, mensagem)
+EMN --> EO : (log simulado de e-mail)
+deactivate EO
+
+deactivate EN
+
+ES --> LF : EmprestimoDTO
+deactivate ES
+
+LF --> EC : EmprestimoDTO
+deactivate LF
+
+EC --> U : 201 Created\n{EmprestimoDTO}
+deactivate EC
+
+@enduml

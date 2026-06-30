@@ -1,0 +1,197 @@
+@startuml diagrama-classes
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
+skinparam packageStyle rectangle
+skinparam ArrowColor #2563eb
+skinparam ClassBorderColor #64748b
+skinparam NoteBorderColor #94a3b8
+skinparam NoteBackgroundColor #f8fafc
+
+title Sistema de Biblioteca — Diagrama de Classes
+
+' ── Interfaces pequenas (ISP) ────────────────────────────────
+package "service" {
+  interface BookService {
+    + cadastrar(request: LivroRequestDTO): LivroDTO
+    + listarTodos(): List<LivroDTO>
+    + buscarPorId(id: Long): LivroDTO
+  }
+
+  interface LoanService {
+    + emprestar(request: EmprestimoRequestDTO): EmprestimoDTO
+    + devolver(emprestimoId: Long): EmprestimoDTO
+    + listarTodos(): List<EmprestimoDTO>
+  }
+
+  class LivroService {
+    - livroRepository: LivroRepository
+    + cadastrar(request): LivroDTO
+    + listarTodos(): List<LivroDTO>
+    + buscarPorId(id): LivroDTO
+    + buscarEntidadePorId(id): Livro
+    + salvar(livro): void
+  }
+
+  class EmprestimoService {
+    - emprestimoRepository: EmprestimoRepository
+    - livroService: LivroService
+    - emprestimoSubject: EmprestimoSubject
+    + emprestar(request): EmprestimoDTO
+    + devolver(emprestimoId): EmprestimoDTO
+    + listarTodos(): List<EmprestimoDTO>
+  }
+}
+
+BookService <|.. LivroService
+LoanService  <|.. EmprestimoService
+
+' ── Facade ───────────────────────────────────────────────────
+package "facade" {
+  class LibraryFacade {
+    - bookService: BookService
+    - loanService: LoanService
+    + cadastrarLivro(request): LivroDTO
+    + listarLivros(): List<LivroDTO>
+    + borrowBook(request): EmprestimoDTO
+    + returnBook(id): EmprestimoDTO
+    + listarEmprestimos(): List<EmprestimoDTO>
+  }
+}
+
+LibraryFacade --> BookService
+LibraryFacade --> LoanService
+
+' ── Controllers ──────────────────────────────────────────────
+package "controller" {
+  class LivroController {
+    - libraryFacade: LibraryFacade
+    + cadastrar(request): ResponseEntity
+    + listar(): ResponseEntity
+  }
+
+  class EmprestimoController {
+    - libraryFacade: LibraryFacade
+    + emprestar(request): ResponseEntity
+    + devolver(id): ResponseEntity
+    + listar(): ResponseEntity
+  }
+}
+
+LivroController     --> LibraryFacade
+EmprestimoController --> LibraryFacade
+
+' ── Notification / Factory (OCP, DIP, LSP) ───────────────────
+package "notification" {
+  interface Notification {
+    + enviar(destinatario: String, mensagem: String): void
+  }
+
+  class EmailNotification {
+    + enviar(destinatario, mensagem): void
+  }
+
+  class ConsoleNotification {
+    + enviar(destinatario, mensagem): void
+  }
+
+  enum NotificationType {
+    EMAIL
+    CONSOLE
+  }
+}
+
+Notification <|.. EmailNotification
+Notification <|.. ConsoleNotification
+
+package "factory" {
+  class NotificationFactory {
+    - implementacoes: Map<NotificationType, Notification>
+    + criar(tipo: NotificationType): Notification
+  }
+}
+
+NotificationFactory --> Notification
+NotificationFactory --> NotificationType
+
+' ── Observer ─────────────────────────────────────────────────
+package "observer" {
+  interface EmprestimoObserver {
+    + aoEmprestar(emprestimo: Emprestimo): void
+  }
+
+  interface EmprestimoSubject {
+    + adicionarObserver(observer: EmprestimoObserver): void
+    + notificarObservers(emprestimo: Emprestimo): void
+  }
+
+  class EmprestimoNotificador {
+    - observers: List<EmprestimoObserver>
+    + adicionarObserver(observer): void
+    + notificarObservers(emprestimo): void
+  }
+
+  class ConsoleObserver {
+    - notificationFactory: NotificationFactory
+    + aoEmprestar(emprestimo): void
+  }
+
+  class EmailObserver {
+    - notificationFactory: NotificationFactory
+    + aoEmprestar(emprestimo): void
+  }
+}
+
+EmprestimoSubject  <|..  EmprestimoNotificador
+EmprestimoObserver <|..  ConsoleObserver
+EmprestimoObserver <|..  EmailObserver
+EmprestimoNotificador "1" o-- "n" EmprestimoObserver
+ConsoleObserver --> NotificationFactory
+EmailObserver   --> NotificationFactory
+
+EmprestimoService --> EmprestimoSubject
+
+' ── Model ─────────────────────────────────────────────────── 
+package "model" {
+  class Livro {
+    - id: Long
+    - titulo: String
+    - autor: String
+    - isbn: String
+    - disponivel: boolean
+  }
+
+  class Emprestimo {
+    - id: Long
+    - livro: Livro
+    - nomeUsuario: String
+    - dataEmprestimo: LocalDate
+    - dataDevolucao: LocalDate
+  }
+}
+
+Emprestimo "n" --> "1" Livro
+
+LivroService    --> Livro
+EmprestimoService --> Emprestimo
+
+note bottom of LibraryFacade
+  Padrão **Facade** (GoF)
+  Orquestra BookService e LoanService
+  sem expor complexidade interna.
+end note
+
+note right of NotificationFactory
+  Padrão **Factory Method** (GoF)
+  Decide em runtime qual Notification
+  retornar. Aplica OCP: novo tipo =
+  nova classe, sem alterar existentes.
+end note
+
+note right of EmprestimoNotificador
+  Padrão **Observer** (GoF)
+  Subject notifica automaticamente
+  ConsoleObserver e EmailObserver
+  ao ocorrer um empréstimo.
+end note
+
+@enduml
