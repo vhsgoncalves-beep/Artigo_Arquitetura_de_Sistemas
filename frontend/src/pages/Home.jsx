@@ -32,20 +32,6 @@ export default function Home() {
           <Link to="/emprestimos" className="btn btn-primary">Ver empréstimos</Link>
         </div>
       </div>
-
-      <div className="card info-tecnica">
-        <h2>🏗️ Arquitetura aplicada</h2>
-        <ul>
-          <li><strong>SRP</strong> — LivroService, EmprestimoService e NotificationService com responsabilidades únicas</li>
-          <li><strong>OCP</strong> — Novos tipos de notificação sem alterar código existente</li>
-          <li><strong>LSP</strong> — EmailNotification e ConsoleNotification são substituíveis</li>
-          <li><strong>ISP</strong> — Interfaces pequenas: BookService, LoanService, Notification</li>
-          <li><strong>DIP</strong> — Services dependem de abstrações, injetadas pelo Spring</li>
-          <li><strong>Factory Method</strong> — NotificationFactory decide a implementação em tempo de execução</li>
-          <li><strong>Facade</strong> — LibraryFacade orquestra sem expor complexidade interna</li>
-          <li><strong>Observer</strong> — Notificações automáticas ao realizar empréstimo</li>
-        </ul>
-      </div>
     </div>
   )
 }
