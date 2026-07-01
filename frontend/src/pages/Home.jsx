@@ -8,9 +8,6 @@ export default function Home() {
     <div className="page-home">
       <div className="hero">
         <h1>📚 Sistema de Biblioteca</h1>
-        <p className="hero-subtitle">
-          Estudo de caso acadêmico — princípios <strong>SOLID</strong> e padrões <strong>GoF</strong>
-        </p>
       </div>
 
       <div className="cards-grid">
