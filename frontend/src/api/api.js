@@ -5,7 +5,7 @@ import axios from 'axios'
  * O Vite faz proxy de /api para http://localhost:8080/api (vite.config.js).
  */
 const api = axios.create({
-  baseURL: 'artigoarquiteturadesistemas-production.up.railway.app',
+  baseURL: 'https://artigo-arquiteturade-sistemas.railway.app/api'
 })
 
 // ── Livros ──────────────────────────────────────────────────
